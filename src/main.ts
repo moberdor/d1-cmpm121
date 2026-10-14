@@ -3,7 +3,7 @@ const honeySymbol = "🍯";
 const workerSymbol = "🐝";
 const officeSymbol = "🏢";
 const keeperSymbol = "👷";
-document.body.style.backgroundColor = "black";
+
 const workerUpgrade = {
   name: "Worker Bee",
   gain: 1,
@@ -37,17 +37,24 @@ const beeButton = document.querySelector<HTMLButtonElement>("#bee-button")!;
 const honeyDisplay = document.querySelector<HTMLParagraphElement>(
   "#honey-display",
 )!;
-honeyDisplay.style.color = "white";
-
+const beeCounter = document.querySelector<HTMLParagraphElement>(
+  "#bee-display",
+)!;
 const workerCard = document.querySelector<HTMLElement>("#worker-card")!;
 const workerButton = workerCard.querySelector("button")!;
-workerCard.style.color = "yellow";
 const officeCard = document.querySelector<HTMLElement>("#office-card")!;
-officeCard.style.color = "yellow";
 const officeButton = officeCard.querySelector("button")!;
 const keeperCard = document.querySelector<HTMLElement>("#keeper-card")!;
-keeperCard.style.color = "yellow";
 const keeperButton = keeperCard.querySelector("button")!;
+
+honeyDisplay.style.color = "white";
+beeCounter.style.color = "white";
+workerCard.style.color = "#ffde65";
+officeCard.style.color = "#ffde65";
+keeperCard.style.color = "#ffde65";
+
+heading.textContent = gameTitle;
+heading.style.color = "#ffde65";
 
 function renderUpgrade(
   card: HTMLElement,
@@ -60,8 +67,6 @@ function renderUpgrade(
   card.querySelector("strong")!.textContent = `${upgrade.cost} ${honeySymbol}`;
 }
 
-heading.textContent = gameTitle;
-heading.style.color = "yellow";
 renderUpgrade(workerCard, workerUpgrade);
 renderUpgrade(officeCard, officeUpgrade);
 renderUpgrade(keeperCard, keeperUpgrade);
@@ -104,6 +109,7 @@ function update(time: number) {
   eventTick(deltaTime);
 
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
+  beeCounter.textContent = `${beeCount} ${workerSymbol}`;
   workerButton.disabled = honey < workerUpgrade.cost;
   officeButton.disabled = honey < officeUpgrade.cost;
   keeperButton.disabled = honey < keeperUpgrade.cost;

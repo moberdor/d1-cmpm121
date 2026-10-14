@@ -1,6 +1,7 @@
 body {
   font-family: system-ui, sans-serif;
   text-align: center;
+  background-color: #1e1e1e;
 }
 
 #bee-button {
@@ -28,11 +29,16 @@ body {
   font-size: 1.5rem;
 }
 
+#bee-display {
+  font-size: 1.2rem;
+}
+
 .upgrade {
   display: inline-block;
   padding: 13px 21px 17px;
   border: 2px solid;
   transform: rotate(-0.8deg);
+  background: #3c3c3c;
 }
 
 .upgrade h2 {
