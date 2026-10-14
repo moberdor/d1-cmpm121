@@ -1,9 +1,9 @@
-const gameTitle = "Bee Clicker game";
+const gameTitle = "Bee Clicker Game";
 const honeySymbol = "🍯";
 const workerSymbol = "🐝";
 const officeSymbol = "🏢";
 const keeperSymbol = "👷";
-
+document.body.style.backgroundColor = "black";
 const workerUpgrade = {
   name: "Worker Bee",
   gain: 1,
@@ -37,14 +37,16 @@ const beeButton = document.querySelector<HTMLButtonElement>("#bee-button")!;
 const honeyDisplay = document.querySelector<HTMLParagraphElement>(
   "#honey-display",
 )!;
+honeyDisplay.style.color = "white";
 
 const workerCard = document.querySelector<HTMLElement>("#worker-card")!;
 const workerButton = workerCard.querySelector("button")!;
-
+workerCard.style.color = "yellow";
 const officeCard = document.querySelector<HTMLElement>("#office-card")!;
+officeCard.style.color = "yellow";
 const officeButton = officeCard.querySelector("button")!;
-
 const keeperCard = document.querySelector<HTMLElement>("#keeper-card")!;
+keeperCard.style.color = "yellow";
 const keeperButton = keeperCard.querySelector("button")!;
 
 function renderUpgrade(
@@ -59,6 +61,7 @@ function renderUpgrade(
 }
 
 heading.textContent = gameTitle;
+heading.style.color = "yellow";
 renderUpgrade(workerCard, workerUpgrade);
 renderUpgrade(officeCard, officeUpgrade);
 renderUpgrade(keeperCard, keeperUpgrade);
