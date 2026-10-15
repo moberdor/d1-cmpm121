@@ -11,6 +11,7 @@ const workerUpgrade = {
   gainSymbol: honeySymbol,
   emoji: workerSymbol,
   cost: 10,
+  owned: 0,
 };
 
 const officeUpgrade = {
@@ -20,6 +21,7 @@ const officeUpgrade = {
   gainUnit: "c",
   emoji: officeSymbol,
   cost: 40,
+  owned: 0,
 };
 
 const keeperUpgrade = {
@@ -29,6 +31,7 @@ const keeperUpgrade = {
   gainUnit: "s",
   emoji: keeperSymbol,
   cost: 100,
+  owned: 0,
 };
 
 const queenUpgrade = {
@@ -38,6 +41,7 @@ const queenUpgrade = {
   gainUnit: "10s",
   emoji: "👑",
   cost: 100,
+  owned: 0,
 };
 
 let honey = 0;
@@ -55,6 +59,9 @@ const honeyDisplay = document.querySelector<HTMLParagraphElement>(
 const beeCounter = document.querySelector<HTMLParagraphElement>(
   "#bee-display",
 )!;
+const rateDisplay = document.querySelector<HTMLParagraphElement>(
+  "#rate-display",
+)!;
 const workerCard = document.querySelector<HTMLElement>("#worker-card")!;
 const workerButton = workerCard.querySelector("button")!;
 const officeCard = document.querySelector<HTMLElement>("#office-card")!;
@@ -66,6 +73,7 @@ const queenButton = queenCard.querySelector("button")!;
 
 honeyDisplay.style.color = "white";
 beeCounter.style.color = "white";
+rateDisplay.style.color = "white";
 workerCard.style.color = "#ffde65";
 officeCard.style.color = "#ffde65";
 keeperCard.style.color = "#ffde65";
@@ -86,13 +94,9 @@ function renderUpgrade(
   card.querySelector("p")!.textContent =
     `+${upgrade.gain} ${upgrade.gainSymbol}/${upgrade.gainUnit}`;
   card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
+  card.querySelector(".upgrade-owned")!.textContent = `Owned: ${upgrade.owned}`;
   card.querySelector("strong")!.textContent = `${upgrade.cost} ${honeySymbol}`;
 }
-
-renderUpgrade(workerCard, workerUpgrade);
-renderUpgrade(officeCard, officeUpgrade);
-renderUpgrade(keeperCard, keeperUpgrade);
-renderUpgrade(queenCard, queenUpgrade);
 
 beeButton.addEventListener("click", () => {
   honey += beeCount;
@@ -102,6 +106,7 @@ workerButton.addEventListener("click", () => {
   if (honey >= workerUpgrade.cost) {
     honey -= workerUpgrade.cost;
     beeCount += workerUpgrade.gain;
+    workerUpgrade.owned++;
   }
 });
 
@@ -109,6 +114,7 @@ officeButton.addEventListener("click", () => {
   if (honey >= officeUpgrade.cost) {
     honey -= officeUpgrade.cost;
     beeCount += officeUpgrade.gain;
+    officeUpgrade.owned++;
   }
 });
 
@@ -116,6 +122,7 @@ keeperButton.addEventListener("click", () => {
   if (honey >= keeperUpgrade.cost) {
     honey -= keeperUpgrade.cost;
     keeperCount += keeperUpgrade.gain;
+    keeperUpgrade.owned++;
   }
 });
 
@@ -123,6 +130,7 @@ queenButton.addEventListener("click", () => {
   if (honey >= queenUpgrade.cost) {
     honey -= queenUpgrade.cost;
     queenCount += queenUpgrade.gain;
+    queenUpgrade.owned++;
   }
 });
 
@@ -149,6 +157,14 @@ function update(time: number) {
 
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
   beeCounter.textContent = `${beeCount} ${workerSymbol}`;
+  rateDisplay.textContent =
+    `+${beeCount} ${honeySymbol}/c · +${keeperCount} ${honeySymbol}/s`;
+
+  renderUpgrade(workerCard, workerUpgrade);
+  renderUpgrade(officeCard, officeUpgrade);
+  renderUpgrade(keeperCard, keeperUpgrade);
+  renderUpgrade(queenCard, queenUpgrade);
+
   workerButton.disabled = honey < workerUpgrade.cost;
   officeButton.disabled = honey < officeUpgrade.cost;
   keeperButton.disabled = honey < keeperUpgrade.cost;
