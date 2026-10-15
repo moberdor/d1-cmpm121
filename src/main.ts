@@ -129,21 +129,23 @@ queenButton.addEventListener("click", () => {
 function eventTick(deltaTime: number) {
   honey += keeperCount * deltaTime;
 
-  if (queenCount > 0 && queenTimer >= 10) {
-    beeCount += queenCount;
-    queenTimer = 0;
-  } else {
+  if (queenCount > 0) {
     queenTimer += deltaTime;
+    while (queenTimer >= 10) {
+      beeCount += queenCount;
+      queenTimer -= 10;
+    }
   }
 }
 
-let lastTime = 0;
+let lastTime: number | undefined;
 
 function update(time: number) {
-  const deltaTime = (time - lastTime) / 1000;
+  if (lastTime !== undefined) {
+    const deltaTime = (time - lastTime) / 1000;
+    eventTick(deltaTime);
+  }
   lastTime = time;
-
-  eventTick(deltaTime);
 
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
   beeCounter.textContent = `${beeCount} ${workerSymbol}`;
