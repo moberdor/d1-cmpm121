@@ -41,6 +41,10 @@ body {
   background: #3c3c3c;
 }
 
+.upgrade:nth-of-type(even) {
+  transform: rotate(0.6deg);
+}
+
 .upgrade h2 {
   margin: 0 0 2px;
 }

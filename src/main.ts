@@ -4,6 +4,8 @@ const workerSymbol = "🐝";
 const officeSymbol = "🏢";
 const keeperSymbol = "👷";
 
+const costMultiplier = 1.15;
+
 const workerUpgrade = {
   name: "Worker Bee",
   gain: 1,
@@ -16,7 +18,7 @@ const workerUpgrade = {
 
 const officeUpgrade = {
   name: "Office Bee",
-  gain: 2,
+  gain: 3,
   gainSymbol: honeySymbol,
   gainUnit: "c",
   emoji: officeSymbol,
@@ -26,11 +28,11 @@ const officeUpgrade = {
 
 const keeperUpgrade = {
   name: "Beekeeper",
-  gain: 1,
+  gain: 3,
   gainSymbol: honeySymbol,
   gainUnit: "s",
   emoji: keeperSymbol,
-  cost: 100,
+  cost: 75,
   owned: 0,
 };
 
@@ -40,7 +42,7 @@ const queenUpgrade = {
   gainSymbol: workerSymbol,
   gainUnit: "10s",
   emoji: "👑",
-  cost: 100,
+  cost: 300,
   owned: 0,
 };
 
@@ -107,6 +109,7 @@ workerButton.addEventListener("click", () => {
     honey -= workerUpgrade.cost;
     beeCount += workerUpgrade.gain;
     workerUpgrade.owned++;
+    workerUpgrade.cost = Math.ceil(workerUpgrade.cost * costMultiplier);
   }
 });
 
@@ -115,6 +118,7 @@ officeButton.addEventListener("click", () => {
     honey -= officeUpgrade.cost;
     beeCount += officeUpgrade.gain;
     officeUpgrade.owned++;
+    officeUpgrade.cost = Math.ceil(officeUpgrade.cost * costMultiplier);
   }
 });
 
@@ -123,6 +127,7 @@ keeperButton.addEventListener("click", () => {
     honey -= keeperUpgrade.cost;
     keeperCount += keeperUpgrade.gain;
     keeperUpgrade.owned++;
+    keeperUpgrade.cost = Math.ceil(keeperUpgrade.cost * costMultiplier);
   }
 });
 
@@ -131,6 +136,7 @@ queenButton.addEventListener("click", () => {
     honey -= queenUpgrade.cost;
     queenCount += queenUpgrade.gain;
     queenUpgrade.owned++;
+    queenUpgrade.cost = Math.ceil(queenUpgrade.cost * costMultiplier);
   }
 });
 
