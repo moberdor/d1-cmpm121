@@ -9,7 +9,7 @@ const costMultiplier = 1.15;
 const workerUpgrade = {
   name: "Worker Bee",
   gain: 1,
-  gainUnit: "c",
+  gainUnit: "👆",
   gainSymbol: honeySymbol,
   emoji: workerSymbol,
   cost: 10,
@@ -20,7 +20,7 @@ const officeUpgrade = {
   name: "Office Bee",
   gain: 3,
   gainSymbol: honeySymbol,
-  gainUnit: "c",
+  gainUnit: "👆",
   emoji: officeSymbol,
   cost: 40,
   owned: 0,
@@ -96,12 +96,21 @@ function renderUpgrade(
   card.querySelector("p")!.textContent =
     `+${upgrade.gain} ${upgrade.gainSymbol}/${upgrade.gainUnit}`;
   card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
-  card.querySelector(".upgrade-owned")!.textContent = `Owned: ${upgrade.owned}`;
+  card.querySelector(".upgrade-owned")!.textContent = `×${upgrade.owned}`;
   card.querySelector("strong")!.textContent = `${upgrade.cost} ${honeySymbol}`;
 }
 
 beeButton.addEventListener("click", () => {
   honey += beeCount;
+
+  const rect = beeButton.getBoundingClientRect();
+  const popup = document.createElement("span");
+  popup.className = "honey-popup";
+  popup.textContent = `+${beeCount} ${honeySymbol}`;
+  popup.style.left = `${rect.left + Math.random() * rect.width}px`;
+  popup.style.top = `${rect.top}px`;
+  document.body.append(popup);
+  popup.addEventListener("animationend", () => popup.remove());
 });
 
 workerButton.addEventListener("click", () => {
@@ -164,7 +173,7 @@ function update(time: number) {
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
   beeCounter.textContent = `${beeCount} ${workerSymbol}`;
   rateDisplay.textContent =
-    `+${beeCount} ${honeySymbol}/c · +${keeperCount} ${honeySymbol}/s`;
+    `+${beeCount} ${honeySymbol}/👆 · +${keeperCount} ${honeySymbol}/s`;
 
   renderUpgrade(workerCard, workerUpgrade);
   renderUpgrade(officeCard, officeUpgrade);

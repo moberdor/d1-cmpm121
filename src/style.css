@@ -35,6 +35,7 @@ body {
 
 .upgrade {
   display: inline-block;
+  margin: 14px 11px;
   padding: 13px 21px 17px;
   border: 2px solid;
   transform: rotate(-0.8deg);
@@ -43,6 +44,10 @@ body {
 
 .upgrade:nth-of-type(even) {
   transform: rotate(0.6deg);
+}
+
+.upgrade:has(button:disabled) {
+  opacity: 0.55;
 }
 
 .upgrade h2 {
@@ -61,4 +66,21 @@ body {
 .upgrade button {
   padding: 5px 16px 6px;
   font-size: 1rem;
+}
+
+.honey-popup {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #ffde65;
+  pointer-events: none;
+  animation: float-up 0.8s ease-out forwards;
+}
+
+@keyframes float-up {
+  to {
+    transform: translate(-50%, -250%);
+    opacity: 0;
+  }
 }
