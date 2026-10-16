@@ -3,56 +3,80 @@ const honeySymbol = "🍯";
 const workerSymbol = "🐝";
 const officeSymbol = "🏢";
 const keeperSymbol = "👷";
+const queenSymbol = "👑";
 
 const costMultiplier = 1.15;
 
-const workerUpgrade = {
-  name: "Worker Bee",
-  gain: 1,
-  gainUnit: "👆",
-  gainSymbol: honeySymbol,
-  emoji: workerSymbol,
-  cost: 10,
-  owned: 0,
-};
-
-const officeUpgrade = {
-  name: "Office Bee",
-  gain: 3,
-  gainSymbol: honeySymbol,
-  gainUnit: "👆",
-  emoji: officeSymbol,
-  cost: 40,
-  owned: 0,
-};
-
-const keeperUpgrade = {
-  name: "Beekeeper",
-  gain: 3,
-  gainSymbol: honeySymbol,
-  gainUnit: "s",
-  emoji: keeperSymbol,
-  cost: 75,
-  owned: 0,
-};
-
-const queenUpgrade = {
-  name: "Queen Bee",
-  gain: 1,
-  gainSymbol: workerSymbol,
-  gainUnit: "10s",
-  emoji: "👑",
-  cost: 300,
-  owned: 0,
-};
-
 let honey = 0;
 let beeCount = 1;
-let keeperCount = 0;
-let queenCount = 0;
-
 let queenTimer = 0;
 
+// ----------------------------------------------------------------
+interface Upgrade {
+  name: string;
+  emoji: string;
+  gain: number;
+  gainUnit: "👆" | "s" | "10s";
+  gainSymbol: string;
+  cost: number;
+  owned: number;
+  startHidden: boolean;
+  card: HTMLElement;
+  button: HTMLButtonElement;
+}
+
+const upgrades: Upgrade[] = [
+  {
+    name: "Worker Bee",
+    emoji: workerSymbol,
+    gain: 1,
+    gainUnit: "👆",
+    gainSymbol: honeySymbol,
+    cost: 10,
+    owned: 0,
+    startHidden: false,
+    card: null!,
+    button: null!,
+  },
+  {
+    name: "Office Bee",
+    emoji: officeSymbol,
+    gain: 3,
+    gainUnit: "👆",
+    gainSymbol: honeySymbol,
+    cost: 40,
+    owned: 0,
+    startHidden: true,
+    card: null!,
+    button: null!,
+  },
+  {
+    name: "Beekeeper",
+    emoji: keeperSymbol,
+    gain: 3,
+    gainUnit: "s",
+    gainSymbol: honeySymbol,
+    cost: 75,
+    owned: 0,
+    startHidden: true,
+    card: null!,
+    button: null!,
+  },
+  {
+    name: "Queen Bee",
+    emoji: queenSymbol,
+    gain: 1,
+    gainUnit: "10s",
+    gainSymbol: workerSymbol,
+    cost: 300,
+    owned: 0,
+    startHidden: true,
+    card: null!,
+    button: null!,
+  },
+];
+
+// ----------------------------------------------------------------
 const heading = document.querySelector<HTMLHeadingElement>("#game-title")!;
 const beeButton = document.querySelector<HTMLButtonElement>("#bee-button")!;
 const honeyDisplay = document.querySelector<HTMLParagraphElement>(
@@ -64,45 +88,75 @@ const beeCounter = document.querySelector<HTMLParagraphElement>(
 const rateDisplay = document.querySelector<HTMLParagraphElement>(
   "#rate-display",
 )!;
-const workerCard = document.querySelector<HTMLElement>("#worker-card")!;
-const workerButton = workerCard.querySelector("button")!;
-const officeCard = document.querySelector<HTMLElement>("#office-card")!;
-const officeButton = officeCard.querySelector("button")!;
-const keeperCard = document.querySelector<HTMLElement>("#keeper-card")!;
-const keeperButton = keeperCard.querySelector("button")!;
-const queenCard = document.querySelector<HTMLElement>("#queen-card")!;
-const queenButton = queenCard.querySelector("button")!;
+const upgradeList = document.querySelector<HTMLElement>("#upgrades")!;
 
 honeyDisplay.style.color = "white";
 beeCounter.style.color = "white";
 rateDisplay.style.color = "white";
-workerCard.style.color = "#ffde65";
-officeCard.style.color = "#ffde65";
-keeperCard.style.color = "#ffde65";
-queenCard.style.color = "#ffde65";
 
 heading.textContent = gameTitle;
 heading.style.color = "#ffde65";
 
-function renderUpgrade(
-  card: HTMLElement,
-  upgrade:
-    | typeof workerUpgrade
-    | typeof officeUpgrade
-    | typeof keeperUpgrade
-    | typeof queenUpgrade,
-) {
-  card.querySelector("h2")!.textContent = upgrade.name;
-  card.querySelector("p")!.textContent =
-    `+${upgrade.gain} ${upgrade.gainSymbol}/${upgrade.gainUnit}`;
-  card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
-  card.querySelector(".upgrade-owned")!.textContent = `×${upgrade.owned}`;
-  card.querySelector("strong")!.textContent = `${upgrade.cost} ${honeySymbol}`;
+// Create html cards for each upgrade
+for (const upgrade of upgrades) {
+  const card = document.createElement("div");
+  card.className = "upgrade";
+  card.style.color = "#ffde65";
+  card.innerHTML = `
+    <h2></h2>
+    <p></p>
+    <div class="upgrade-emoji"></div>
+    <p class="upgrade-owned"></p>
+    <p>Cost: <strong></strong></p>
+    <button>Buy</button>
+  `;
+  if (upgrade.startHidden) {
+    card.style.display = "none";
+  }
+  upgradeList.append(card);
+
+  upgrade.card = card;
+  upgrade.button = card.querySelector("button")!;
+  upgrade.button.addEventListener("click", () => {
+    if (honey < upgrade.cost) return;
+    honey -= upgrade.cost;
+    upgrade.owned++;
+    if (upgrade.gainUnit === "👆") {
+      beeCount += upgrade.gain;
+    }
+    upgrade.cost = Math.ceil(upgrade.cost * costMultiplier);
+  });
 }
 
+// ----------------------------------------------------------------
+
+// Calculate number of beekeepers
+function keeperCount() {
+  let total = 0;
+  for (const upgrade of upgrades) {
+    if (upgrade.gainUnit === "s") {
+      total += upgrade.owned * upgrade.gain;
+    }
+  }
+  return total;
+}
+
+// Calculate number of queens
+function queenCount() {
+  let total = 0;
+  for (const upgrade of upgrades) {
+    if (upgrade.gainUnit === "10s") {
+      total += upgrade.owned * upgrade.gain;
+    }
+  }
+  return total;
+}
+
+// Handle Clicking Bee
 beeButton.addEventListener("click", () => {
   honey += beeCount;
 
+  // Animated effect
   const rect = beeButton.getBoundingClientRect();
   const popup = document.createElement("span");
   popup.className = "honey-popup";
@@ -113,49 +167,15 @@ beeButton.addEventListener("click", () => {
   popup.addEventListener("animationend", () => popup.remove());
 });
 
-workerButton.addEventListener("click", () => {
-  if (honey >= workerUpgrade.cost) {
-    honey -= workerUpgrade.cost;
-    beeCount += workerUpgrade.gain;
-    workerUpgrade.owned++;
-    workerUpgrade.cost = Math.ceil(workerUpgrade.cost * costMultiplier);
-  }
-});
-
-officeButton.addEventListener("click", () => {
-  if (honey >= officeUpgrade.cost) {
-    honey -= officeUpgrade.cost;
-    beeCount += officeUpgrade.gain;
-    officeUpgrade.owned++;
-    officeUpgrade.cost = Math.ceil(officeUpgrade.cost * costMultiplier);
-  }
-});
-
-keeperButton.addEventListener("click", () => {
-  if (honey >= keeperUpgrade.cost) {
-    honey -= keeperUpgrade.cost;
-    keeperCount += keeperUpgrade.gain;
-    keeperUpgrade.owned++;
-    keeperUpgrade.cost = Math.ceil(keeperUpgrade.cost * costMultiplier);
-  }
-});
-
-queenButton.addEventListener("click", () => {
-  if (honey >= queenUpgrade.cost) {
-    honey -= queenUpgrade.cost;
-    queenCount += queenUpgrade.gain;
-    queenUpgrade.owned++;
-    queenUpgrade.cost = Math.ceil(queenUpgrade.cost * costMultiplier);
-  }
-});
-
+// Handle time based events
 function eventTick(deltaTime: number) {
-  honey += keeperCount * deltaTime;
+  honey += keeperCount() * deltaTime;
 
-  if (queenCount > 0) {
+  if (queenCount() > 0) {
+    // Queen produces bees every 10s
     queenTimer += deltaTime;
     while (queenTimer >= 10) {
-      beeCount += queenCount;
+      beeCount += queenCount();
       queenTimer -= 10;
     }
   }
@@ -170,30 +190,30 @@ function update(time: number) {
   }
   lastTime = time;
 
+  // Update Stats
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
   beeCounter.textContent = `${beeCount} ${workerSymbol}`;
   rateDisplay.textContent =
-    `+${beeCount} ${honeySymbol}/👆 · +${keeperCount} ${honeySymbol}/s`;
+    `+${beeCount} ${honeySymbol}/👆 · +${keeperCount()} ${honeySymbol}/s`;
 
-  renderUpgrade(workerCard, workerUpgrade);
-  renderUpgrade(officeCard, officeUpgrade);
-  renderUpgrade(keeperCard, keeperUpgrade);
-  renderUpgrade(queenCard, queenUpgrade);
+  for (const upgrade of upgrades) {
+    // Update Upgrade UI
+    upgrade.card.querySelector("h2")!.textContent = upgrade.name;
+    upgrade.card.querySelector("p")!.textContent =
+      `+${upgrade.gain} ${upgrade.gainSymbol}/${upgrade.gainUnit}`;
+    upgrade.card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
+    upgrade.card.querySelector(".upgrade-owned")!.textContent =
+      `×${upgrade.owned}`;
+    upgrade.card.querySelector("strong")!.textContent =
+      `${upgrade.cost} ${honeySymbol}`;
 
-  workerButton.disabled = honey < workerUpgrade.cost;
-  officeButton.disabled = honey < officeUpgrade.cost;
-  keeperButton.disabled = honey < keeperUpgrade.cost;
-  queenButton.disabled = honey < queenUpgrade.cost;
+    upgrade.button.disabled = honey < upgrade.cost;
 
-  if (honey >= officeUpgrade.cost) {
-    officeCard.style.display = "";
+    if (honey >= upgrade.cost) {
+      upgrade.card.style.display = "";
+    }
   }
-  if (honey >= keeperUpgrade.cost) {
-    keeperCard.style.display = "";
-  }
-  if (honey >= queenUpgrade.cost) {
-    queenCard.style.display = "";
-  }
+
   requestAnimationFrame(update);
 }
 
