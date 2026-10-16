@@ -8,7 +8,6 @@ const constructSymbol = "🏗️";
 const paperWorkSymbol = "📄";
 const deliverySymbol = "🚚";
 const saxSymbol = "🎷";
-const trophySymbol = "🏆";
 
 const costMultiplier = 1.15;
 const queenInterval = 10;
