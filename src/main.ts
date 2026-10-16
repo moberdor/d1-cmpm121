@@ -4,14 +4,21 @@ const workerSymbol = "🐝";
 const officeSymbol = "🏢";
 const keeperSymbol = "👷";
 const queenSymbol = "👑";
+const constructSymbol = "🏗️";
+const paperWorkSymbol = "📄";
+const deliverySymbol = "🚚";
+const saxSymbol = "🎷";
+const trophySymbol = "🏆";
 
 const costMultiplier = 1.15;
 const queenInterval = 10;
+const jazzInterval = 25;
 const msPerSecond = 1000;
 
 let honey = 0;
 let beeCount = 1;
 let queenTimer = 0;
+let jazzTimer = 0;
 
 // ----------------------------------------------------------------
 type UpgradeKind = "click" | "rate" | "interval";
@@ -70,6 +77,50 @@ const upgrades: Upgrade[] = [
     gainUnit: `${queenInterval}s`,
     gainSymbol: workerSymbol,
     cost: 300,
+    owned: 0,
+    startHidden: true,
+  },
+  {
+    name: "Accountant Bee",
+    emoji: paperWorkSymbol,
+    gain: 2.5,
+    kind: "rate",
+    gainUnit: "s",
+    gainSymbol: honeySymbol,
+    cost: 700,
+    owned: 0,
+    startHidden: true,
+  },
+  {
+    name: "Construction Site",
+    emoji: constructSymbol,
+    gain: 4,
+    kind: "rate",
+    gainUnit: "s",
+    gainSymbol: honeySymbol,
+    cost: 1250,
+    owned: 0,
+    startHidden: true,
+  },
+  {
+    name: "Jazz Bee",
+    emoji: saxSymbol + workerSymbol,
+    gain: 3,
+    kind: "interval",
+    gainUnit: `${jazzInterval}s`,
+    gainSymbol: workerSymbol,
+    cost: 2200,
+    owned: 0,
+    startHidden: true,
+  },
+  {
+    name: "Honey Delivery",
+    emoji: deliverySymbol,
+    gain: 8,
+    kind: "rate",
+    gainUnit: "s",
+    gainSymbol: honeySymbol,
+    cost: 2500,
     owned: 0,
     startHidden: true,
   },
@@ -167,9 +218,14 @@ function eventTick(deltaTime: number) {
   if (ownedOf("interval") > 0) {
     // Queen produces bees on a fixed interval
     queenTimer += deltaTime;
+    jazzTimer += deltaTime;
     while (queenTimer >= queenInterval) {
       beeCount += ownedOf("interval");
       queenTimer -= queenInterval;
+    }
+    while (jazzTimer >= jazzInterval) {
+      beeCount += ownedOf("interval");
+      jazzTimer -= jazzInterval;
     }
   }
 }
