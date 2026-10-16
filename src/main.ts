@@ -6,23 +6,26 @@ const keeperSymbol = "👷";
 const queenSymbol = "👑";
 
 const costMultiplier = 1.15;
+const queenInterval = 10;
+const msPerSecond = 1000;
 
 let honey = 0;
 let beeCount = 1;
 let queenTimer = 0;
 
 // ----------------------------------------------------------------
+type UpgradeKind = "click" | "rate" | "interval";
+
 interface Upgrade {
   name: string;
   emoji: string;
   gain: number;
-  gainUnit: "👆" | "s" | "10s";
+  kind: UpgradeKind;
+  gainUnit: string;
   gainSymbol: string;
   cost: number;
   owned: number;
   startHidden: boolean;
-  card: HTMLElement;
-  button: HTMLButtonElement;
 }
 
 const upgrades: Upgrade[] = [
@@ -30,53 +33,54 @@ const upgrades: Upgrade[] = [
     name: "Worker Bee",
     emoji: workerSymbol,
     gain: 1,
+    kind: "click",
     gainUnit: "👆",
     gainSymbol: honeySymbol,
     cost: 10,
     owned: 0,
     startHidden: false,
-    card: null!,
-    button: null!,
   },
   {
     name: "Office Bee",
     emoji: officeSymbol,
     gain: 3,
+    kind: "click",
     gainUnit: "👆",
     gainSymbol: honeySymbol,
     cost: 40,
     owned: 0,
     startHidden: true,
-    card: null!,
-    button: null!,
   },
   {
     name: "Beekeeper",
     emoji: keeperSymbol,
     gain: 3,
+    kind: "rate",
     gainUnit: "s",
     gainSymbol: honeySymbol,
     cost: 75,
     owned: 0,
     startHidden: true,
-    card: null!,
-    button: null!,
   },
   {
     name: "Queen Bee",
     emoji: queenSymbol,
     gain: 1,
-    gainUnit: "10s",
+    kind: "interval",
+    gainUnit: `${queenInterval}s`,
     gainSymbol: workerSymbol,
     cost: 300,
     owned: 0,
     startHidden: true,
-    card: null!,
-    button: null!,
   },
 ];
 
 // ----------------------------------------------------------------
+interface UpgradeView {
+  card: HTMLElement;
+  button: HTMLButtonElement;
+}
+
 const heading = document.querySelector<HTMLHeadingElement>("#game-title")!;
 const beeButton = document.querySelector<HTMLButtonElement>("#bee-button")!;
 const honeyDisplay = document.querySelector<HTMLParagraphElement>(
@@ -98,6 +102,7 @@ heading.textContent = gameTitle;
 heading.style.color = "#ffde65";
 
 // Create html cards for each upgrade
+const views: UpgradeView[] = [];
 for (const upgrade of upgrades) {
   const card = document.createElement("div");
   card.className = "upgrade";
@@ -115,13 +120,13 @@ for (const upgrade of upgrades) {
   }
   upgradeList.append(card);
 
-  upgrade.card = card;
-  upgrade.button = card.querySelector("button")!;
-  upgrade.button.addEventListener("click", () => {
+  const button = card.querySelector("button")!;
+  views.push({ card, button });
+  button.addEventListener("click", () => {
     if (honey < upgrade.cost) return;
     honey -= upgrade.cost;
     upgrade.owned++;
-    if (upgrade.gainUnit === "👆") {
+    if (upgrade.kind === "click") {
       beeCount += upgrade.gain;
     }
     upgrade.cost = Math.ceil(upgrade.cost * costMultiplier);
@@ -130,22 +135,10 @@ for (const upgrade of upgrades) {
 
 // ----------------------------------------------------------------
 
-// Calculate number of beekeepers
-function keeperCount() {
+function ownedOf(kind: UpgradeKind) {
   let total = 0;
   for (const upgrade of upgrades) {
-    if (upgrade.gainUnit === "s") {
-      total += upgrade.owned * upgrade.gain;
-    }
-  }
-  return total;
-}
-
-// Calculate number of queens
-function queenCount() {
-  let total = 0;
-  for (const upgrade of upgrades) {
-    if (upgrade.gainUnit === "10s") {
+    if (upgrade.kind === kind) {
       total += upgrade.owned * upgrade.gain;
     }
   }
@@ -169,50 +162,53 @@ beeButton.addEventListener("click", () => {
 
 // Handle time based events
 function eventTick(deltaTime: number) {
-  honey += keeperCount() * deltaTime;
+  honey += ownedOf("rate") * deltaTime;
 
-  if (queenCount() > 0) {
-    // Queen produces bees every 10s
+  if (ownedOf("interval") > 0) {
+    // Queen produces bees on a fixed interval
     queenTimer += deltaTime;
-    while (queenTimer >= 10) {
-      beeCount += queenCount();
-      queenTimer -= 10;
+    while (queenTimer >= queenInterval) {
+      beeCount += ownedOf("interval");
+      queenTimer -= queenInterval;
     }
   }
 }
 
-let lastTime: number | undefined;
+// Run the game simulation on a fixed timer, independent of rendering
+const tickIntervalMs = 100;
+let lastTick = performance.now();
+setInterval(() => {
+  const now = performance.now();
+  eventTick((now - lastTick) / msPerSecond);
+  lastTick = now;
+}, tickIntervalMs);
 
-function update(time: number) {
-  if (lastTime !== undefined) {
-    const deltaTime = (time - lastTime) / 1000;
-    eventTick(deltaTime);
-  }
-  lastTime = time;
-
+function update() {
   // Update Stats
   honeyDisplay.textContent = `${Math.floor(honey)} ${honeySymbol}`;
   beeCounter.textContent = `${beeCount} ${workerSymbol}`;
-  rateDisplay.textContent =
-    `+${beeCount} ${honeySymbol}/👆 · +${keeperCount()} ${honeySymbol}/s`;
+  rateDisplay.textContent = `+${beeCount} ${honeySymbol}/👆 · +${
+    ownedOf("rate")
+  } ${honeySymbol}/s`;
 
-  for (const upgrade of upgrades) {
+  upgrades.forEach((upgrade, i) => {
     // Update Upgrade UI
-    upgrade.card.querySelector("h2")!.textContent = upgrade.name;
-    upgrade.card.querySelector("p")!.textContent =
+    const view = views[i];
+    view.card.querySelector("h2")!.textContent = upgrade.name;
+    view.card.querySelector("p")!.textContent =
       `+${upgrade.gain} ${upgrade.gainSymbol}/${upgrade.gainUnit}`;
-    upgrade.card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
-    upgrade.card.querySelector(".upgrade-owned")!.textContent =
+    view.card.querySelector(".upgrade-emoji")!.textContent = upgrade.emoji;
+    view.card.querySelector(".upgrade-owned")!.textContent =
       `×${upgrade.owned}`;
-    upgrade.card.querySelector("strong")!.textContent =
+    view.card.querySelector("strong")!.textContent =
       `${upgrade.cost} ${honeySymbol}`;
 
-    upgrade.button.disabled = honey < upgrade.cost;
+    view.button.disabled = honey < upgrade.cost;
 
     if (honey >= upgrade.cost) {
-      upgrade.card.style.display = "";
+      view.card.style.display = "";
     }
-  }
+  });
 
   requestAnimationFrame(update);
 }
