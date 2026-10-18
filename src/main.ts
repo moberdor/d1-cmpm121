@@ -60,7 +60,7 @@ const upgrades: Upgrade[] = [
   {
     name: "Beekeeper",
     emoji: keeperSymbol,
-    gain: 3,
+    gain: 1,
     kind: "rate",
     gainUnit: "s",
     gainSymbol: honeySymbol,
@@ -82,7 +82,7 @@ const upgrades: Upgrade[] = [
   {
     name: "Accountant Bee",
     emoji: paperWorkSymbol,
-    gain: 2.5,
+    gain: 2,
     kind: "rate",
     gainUnit: "s",
     gainSymbol: honeySymbol,
